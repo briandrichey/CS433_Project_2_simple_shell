@@ -24,7 +24,7 @@ void simple_shell::tokenize(char * command[], char * args[]) {
 
 void simple_shell::execute(char* args[]) {
 	//fork the process
-	pid_t pid = fork();
+	pid_t pid = fork();   //issue is here, windows doesnt recognize fork or pid_t
 
 }
 
