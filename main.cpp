@@ -23,15 +23,13 @@ int main() {
 		cin.getline(commands, MAX_LINE);
 
 		osh.saveCommand(&commands);
-		cout << "displaying history debug step" << endl;	//~~~debug steps to be deleted~~~
-		osh.displayHistory();								//~~~debug steps to be deleted~~~
 
-		//parse to make args[]
-		osh.tokenize(&commands, &args);
+		osh.tokenize(&commands, &args);	//this constructs args[] for execvp
 
-		if (commands == "exit") {
-			osh.shouldRun = false;
-		}
+		osh.execute(&args);
+		//after we have the args[] set up such that args[0] = command, args[1] = parameters, and args[2] = NULL
+		//within parameters will be things such as the "-l" in "ls -l", filename if >> / << is used, "&" for putting things to background
+		
 		osh.shouldRun = false;
 	}
 
