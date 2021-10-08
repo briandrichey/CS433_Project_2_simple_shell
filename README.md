@@ -5,4 +5,6 @@ Using this as a changelog:
 update to issue: can use cygwin / g++ to compile and test the output of the program, not sure if it will cause issues again while porting the program to the server
 
 TO_DO:
-currently we fork, but nothing else, need to have child process invoke execvp() using the args[] created from tokenize()
+go through command history, assign args[i] = history[i] until NULL then call execute again
+
+child process should do execvp and parent should wait for child
