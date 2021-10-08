@@ -22,15 +22,13 @@ int main() {
 
 		cin.getline(commands, MAX_LINE);
 
-		osh.saveCommand(&commands);
-
 		osh.tokenize(&commands, &args);	//this constructs args[] for execvp
 
 		osh.execute(&args);
 		//after we have the args[] set up such that args[0] = command, args[1] = parameters, and args[2] = NULL
 		//within parameters will be things such as the "-l" in "ls -l", filename if >> / << is used, "&" for putting things to background
 		
-		osh.shouldRun = false;
+		//osh.shouldRun = false;
 	}
 
 

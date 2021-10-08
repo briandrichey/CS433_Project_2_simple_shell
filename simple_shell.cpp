@@ -1,5 +1,6 @@
 #include "simple_shell.h"
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <iostream>
 
@@ -9,10 +10,11 @@ simple_shell::simple_shell() {
 	shouldRun = true;
 }
 
+/*
 void simple_shell::saveCommand(char * command[]) {
 	commandHistory.push_back(*command);
 }
-
+*/
 void simple_shell::displayHistory() {
 	for (int i = 0; i < commandHistory.size(); i++) {
 		cout << commandHistory[i];
@@ -26,8 +28,13 @@ void simple_shell::tokenize(char * command[], char * args[]) {
 	int i = 0;
 	char* next_token = NULL;
 	char* token = strtok(*command, " ");
+	string tester(token);
+
 	while (token != NULL) {
-		cout << token << endl;
+		//cout << token << endl;
+		if (tester != "!!") {
+			commandHistory.push_back(token);
+		}
 		args[i] = token;
 		i = i + 1;
 		token = strtok(NULL, " ");
@@ -36,20 +43,40 @@ void simple_shell::tokenize(char * command[], char * args[]) {
 }
 
 void simple_shell::execute(char* args[]) {
-	//fork the process
-	//pid_t pid = fork();  
+	string test(args[0]);
 
-	/*child process will return a pid of 0, parent is going to be any >0 and any <0 will be error
+	if (test == "exit") {
+		shouldRun = false;
+		cout << "SET SHOULD RUN TO FALSE" << endl;
+		return;
+	}
+
+	if (test == "!!") {
+		if (!commandHistory.empty()) {
+			//go through history and make args[i] = history[i]
+			cout << "History not empty!" << endl;
+		}
+		else {
+			cout << "No commands in history!" << endl;
+		}
+	}
+	//fork the process
+	pid_t pid = fork();  
+
+
+
+	//child process will return a pid of 0, parent is going to be any >0 and any <0 will be error
 	if (pid < 0) {
 		cout << "ERROR" << endl;
 		return;
 	}
 	else if (pid == 0) {
 		cout << "CHILD FOUND" << endl;
+		execvp(args[0], args);
 	}
 	else {
 		cout << "PARENT FOUND" << endl;
 	}
-	*/
+	
 }
 
