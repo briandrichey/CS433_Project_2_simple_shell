@@ -1,82 +1,101 @@
 #include "simple_shell.h"
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+#include <cstdlib>
 #include <iostream>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 
 
 simple_shell::simple_shell() {
-	//create shell, set shouldRun to true
 	shouldRun = true;
+	shouldWait = false;
 }
 
-/*
-void simple_shell::saveCommand(char * command[]) {
-	commandHistory.push_back(*command);
-}
-*/
 void simple_shell::displayHistory() {
 	for (int i = 0; i < commandHistory.size(); i++) {
-		cout << commandHistory[i];
+		cout << "Command history: " << i << " " << commandHistory[i] << endl;
 	}
 }
 
-/*https://stackoverflow.com/questions/12704337/splitting-a-string-with-strtok-s*/
-//had to look up how strtok_s works, strtok_s is a windows specific thing that might
-//need to change when we port the program
-void simple_shell::tokenize(char * command[], char * args[]) {
+
+void simple_shell::tokenize(char command[], char* args[]) {
 	int i = 0;
-	char* next_token = NULL;
-	char* token = strtok(*command, " ");
-	string tester(token);
+	bool shouldSave = true;
+	char* token = strtok(command, " ");
 
 	while (token != NULL) {
-		//cout << token << endl;
-		if (tester != "!!") {
-			commandHistory.push_back(token);
+		string str_token(token);
+
+		if (str_token == "!!") {
+			shouldSave = false;
 		}
+		else if (str_token == "exit") {
+			shouldSave = false;
+		}
+		else if (str_token == "&") {
+			shouldSave = false;
+			shouldWait = true;
+		}
+		
 		args[i] = token;
 		i = i + 1;
 		token = strtok(NULL, " ");
 	}
 	args[i] = NULL;
+
+
+	if (shouldSave == true) {
+		//displayHistory();
+		for (int i = 0; i < strlen(*args); i++) {
+			//cout << args[i] << endl;
+			commandHistory.push_back(args[i]);
+		}
+	}
 }
 
-void simple_shell::execute(char* args[]) {
-	string test(args[0]);
 
-	if (test == "exit") {
+void simple_shell::execute(char* args[]) {
+	string str_args(args[0]);
+
+	if (str_args == "exit") {
 		shouldRun = false;
-		cout << "SET SHOULD RUN TO FALSE" << endl;
 		return;
 	}
 
-	if (test == "!!") {
+	/*history functionality*/
+	if (str_args == "!!") {
 		if (!commandHistory.empty()) {
-			//go through history and make args[i] = history[i]
-			cout << "History not empty!" << endl;
+			strcpy(*args, commandHistory.back()); 		
+			commandHistory.pop_back();
 		}
 		else {
 			cout << "No commands in history!" << endl;
+			return;
 		}
 	}
+
 	//fork the process
-	pid_t pid = fork();  
+	pid_t pid = fork();
 
+	//child process will do execvp.
+	if (pid == 0) {
+		execvp(args[0], args);		//execvp doesnt return unless there is issue
 
-
-	//child process will return a pid of 0, parent is going to be any >0 and any <0 will be error
-	if (pid < 0) {
-		cout << "ERROR" << endl;
-		return;
+		exit(1);	//this will only get hit if there is an issue with a command
 	}
-	else if (pid == 0) {
-		cout << "CHILD FOUND" << endl;
-		execvp(args[0], args);
+	//parent process will wait if there is an &
+	else if (pid > 0) {
+		if (shouldWait == true) {
+			wait(NULL);
+		}
+		wait(NULL);		//found this line from the wait man page
+		
 	}
 	else {
-		cout << "PARENT FOUND" << endl;
+		cout << "ERROR FORKING" << endl;
+		shouldRun = false;
+		exit(1);
 	}
-	
 }
-
