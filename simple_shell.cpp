@@ -8,7 +8,8 @@
 #include <sys/types.h>
 #include <windows.h>
 
-
+#define READ_END 0 
+#define WRITE_END 1
 
 simple_shell::simple_shell() {
 	shouldRun = true;
