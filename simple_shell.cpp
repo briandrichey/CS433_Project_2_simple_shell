@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <windows.h>
 
 
 
@@ -58,72 +60,10 @@ void simple_shell::tokenize(char command[], char* args[]) {
 
 void simple_shell::execute(char* args[]) {
 	string str_args(args[0]);
-	int fd [2];
-
-	if (str_args == "exit") {
-		shouldRun = false;
-		return;
-	}
-
-	/*history functionality*/
-	if (str_args == "!!") {
-		if (!commandHistory.empty()) {
-			strcpy(*args, commandHistory.back()); 		
-			commandHistory.pop_back();
-		}
-		else {
-			cout << "No commands in history!" << endl;
-			return;
-		}
-	}
-	if(str_args == ">"){
-		int fw = open(str_args[3]); 
-		dup2(fw,1);
-		}
-	else if(str_args == "<"){
-			
-			
-		}
-	if(str_args == "|"){
-		//translate this to our code
-		/* create the pipe */
-   if (pipe(fd) == ‐1) {
-     fprintf(stderr,"Pipe failed");
-     return 1;
-   }
-
-   /* fork a child process */
-   pid = fork();
-
-   if (pid < 0) { /* error occurred */
-     fprintf(stderr, "Fork Failed");
-     return 1;
-   }
-
-   if (pid > 0) { /* parent process */
-     /* close the unused end of the pipe */
-     close(fd[READ_END]);
-
-     /* write to the pipe */
-     write(fd[WRITE_END], write_msg, strlen(write_msg)+1);
-
-     /* close the write end of the pipe */
-     close(fd[WRITE_END]);
-   }
-   else { /* child process */
-     /* close the unused end of the pipe */
-     close(fd[WRITE_END]);
-
-     /* read from the pipe */
-     read(fd[READ_END], read_msg, BUFFER_SIZE);
-     printf("read %s",read_msg);
-
-     /* close the read end of the pipe */
-     close(fd[READ_END]);
-   }
-   return 0;
-}
-	}
+	string file_name(args[2]);
+	char write_msg[MAX_LINE] = WriteFile(file_name);
+ 	char read_msg[MAX_LINE]=ReadFile(file_name);
+	int fd[2];
 
 	//fork the process
 	pid_t pid = fork();
@@ -147,4 +87,58 @@ void simple_shell::execute(char* args[]) {
 		shouldRun = false;
 		exit(1);
 	}
+	if (str_args == "exit") {
+		shouldRun = false;
+		return;
+	}
+
+	/*history functionality*/
+	if (str_args == "!!") {
+		if (!commandHistory.empty()) {
+			strcpy(*args, commandHistory.back()); 		
+			commandHistory.pop_back();
+		}
+		else {
+			cout << "No commands in history!" << endl;
+			return;
+		}
+	}
+	if(str_args == ">"){
+		int fw = open(file_name); 
+		dup2(fw,1);
+		}
+	else if(str_args == "<"){
+			
+			
+		}
+	if(str_args == "|"){
+		//translate this to our code
+		/* create the pipe */
+   		if (pipe(fd) == ‐1) {
+     			fprintf(stderr,"Pipe failed");
+     			return 1;
+   		}
+
+   		if (pid > 0) { /* parent process */
+    			 /* close the unused end of the pipe */
+    			 close(fd[READ_END]);
+
+    			 /* write to the pipe */
+     			write(fd[WRITE_END], write_msg, strlen(write_msg)+1);
+
+     			/* close the write end of the pipe */
+     			close(fd[WRITE_END]);
+   		}
+   		else { /* child process */
+     			/* close the unused end of the pipe */
+     			close(fd[WRITE_END]);
+
+     			/* read from the pipe */
+    			 read(fd[READ_END], read_msg, BUFFER_SIZE);
+     			printf("read %s",read_msg);
+
+     			/* close the read end of the pipe */
+     			close(fd[READ_END]);
+   }	
+
 }
