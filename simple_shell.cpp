@@ -105,7 +105,7 @@ void simple_shell::execute(char* args[]) {
 		}
 	}
 	if(str_args == ">"){
-		int fw = open(file_name); 
+		//int fw = open(file_name); 
 		dup2(fw,1);
 		}
 	else if(str_args == "<"){
@@ -119,12 +119,14 @@ void simple_shell::execute(char* args[]) {
      			fprintf(stderr,"Pipe failed");
      			return 1;
    		}
+		 /* fork a child process */
+   		pid = fork()
 
    		if (pid > 0) { /* parent process */
     			 /* close the unused end of the pipe */
     			 close(fd[READ_END]);
 			
-			fd[WRITE_END] = open(file_name); 
+			//fd[WRITE_END] = open(file_name); 
 			dup2(write_msg,1);
 
     			 /* write to the pipe */
@@ -137,7 +139,7 @@ void simple_shell::execute(char* args[]) {
      			/* close the unused end of the pipe */
      			close(fd[WRITE_END]);
 			
-			fd[READ_END] = open(file_name); 
+			//fd[READ_END] = open(file_name); 
 			dup2(read_msg,1);
 
      			/* read from the pipe */
