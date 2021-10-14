@@ -124,7 +124,7 @@ void simple_shell::execute(char* args[]) {
     			 /* close the unused end of the pipe */
     			 close(fd[READ_END]);
 			
-			write_msg = open(file_name); 
+			fd[WRITE_END] = open(file_name); 
 			dup2(write_msg,1);
 
     			 /* write to the pipe */
@@ -137,7 +137,7 @@ void simple_shell::execute(char* args[]) {
      			/* close the unused end of the pipe */
      			close(fd[WRITE_END]);
 			
-			read_msg = open(file_name); 
+			fd[READ_END] = open(file_name); 
 			dup2(read_msg,1);
 
      			/* read from the pipe */
