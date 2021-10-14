@@ -75,6 +75,14 @@ void simple_shell::execute(char* args[]) {
 			return;
 		}
 	}
+	if(str_args == ">"){
+		int fw = open(str_args[3]); 
+		dup2(fw,1);
+		}
+	else if(str_args == "<"){
+			
+			
+		}
 
 	//fork the process
 	pid_t pid = fork();
