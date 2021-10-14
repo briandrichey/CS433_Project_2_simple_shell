@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <windows.h>
+
 
 #define READ_END 0 
 #define WRITE_END 1
@@ -62,8 +62,8 @@ void simple_shell::tokenize(char command[], char* args[]) {
 void simple_shell::execute(char* args[]) {
 	string str_args(args[0]);
 	string file_name(args[2]);
-	char write_msg[MAX_LINE] = WriteFile(file_name);
- 	char read_msg[MAX_LINE]=ReadFile(file_name);
+	char write_msg[MAX_LINE];
+ 	char read_msg[MAX_LINE];
 	int fd[2];
 
 	//fork the process
@@ -123,6 +123,9 @@ void simple_shell::execute(char* args[]) {
    		if (pid > 0) { /* parent process */
     			 /* close the unused end of the pipe */
     			 close(fd[READ_END]);
+			
+			write_msg = open(file_name); 
+			dup2(write_msg,1);
 
     			 /* write to the pipe */
      			write(fd[WRITE_END], write_msg, strlen(write_msg)+1);
@@ -133,9 +136,12 @@ void simple_shell::execute(char* args[]) {
    		else { /* child process */
      			/* close the unused end of the pipe */
      			close(fd[WRITE_END]);
+			
+			read_msg = open(file_name); 
+			dup2(read_msg,1);
 
      			/* read from the pipe */
-    			 read(fd[READ_END], read_msg, BUFFER_SIZE);
+    			 read(fd[READ_END], read_msg, MAX_LINE);
      			printf("read %s",read_msg);
 
      			/* close the read end of the pipe */
