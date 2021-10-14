@@ -14,7 +14,7 @@ int main(void) {
 	while (osh.shouldRun) {						/*!DONT FORGET TO SET OSH.SHOULDRUN TO FALSE, EVENTUALLY!*/
 		char commands[MAX_LINE];
 		char * args[MAX_LINE / 2 + 1];
-		
+
 		cout << "osh> ";
 		cout.flush();
 

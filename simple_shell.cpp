@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 
@@ -28,15 +29,15 @@ void simple_shell::tokenize(char command[], char* args[]) {
 	while (token != NULL) {
 		string str_token(token);
 
-		if (str_token == "!!") {
-			shouldSave = false;
-		}
-		else if (str_token == "exit") {
-			shouldSave = false;
-		}
-		else if (str_token == "&") {
+		if (str_token == "&") {
 			shouldSave = false;
 			shouldWait = true;
+		}
+		else if (str_token == ">") {
+		
+		}
+		else if (str_token == "<") {
+
 		}
 		
 		args[i] = token;
@@ -48,16 +49,17 @@ void simple_shell::tokenize(char command[], char* args[]) {
 
 	if (shouldSave == true) {
 		//displayHistory();
-		for (int i = 0; i < strlen(*args); i++) {
+		//for (int i = 0; i < strlen(*args); i++) {
 			//cout << args[i] << endl;
-			commandHistory.push_back(args[i]);
-		}
+			//commandHistory.push_back(args[i]);
+		//}
 	}
 }
 
 
 void simple_shell::execute(char* args[]) {
 	string str_args(args[0]);
+	int fd[2];
 
 	if (str_args == "exit") {
 		shouldRun = false;
@@ -66,7 +68,7 @@ void simple_shell::execute(char* args[]) {
 
 	/*history functionality*/
 	if (str_args == "!!") {
-		if (!commandHistory.empty()) {
+		if (!commandHistory.empty()) {			
 			strcpy(*args, commandHistory.back()); 		
 			commandHistory.pop_back();
 		}
@@ -76,22 +78,27 @@ void simple_shell::execute(char* args[]) {
 		}
 	}
 
-	//fork the process
-	pid_t pid = fork();
-
-	//child process will do execvp.
-	if (pid == 0) {
-		execvp(args[0], args);		//execvp doesnt return unless there is issue
-
-		exit(1);	//this will only get hit if there is an issue with a command
+	/*
+	if (str_args == ">") {
+		int fw = open(str_args[3]);
+		dup2(fw, 1);
 	}
-	//parent process will wait if there is an &
-	else if (pid > 0) {
-		if (shouldWait == true) {
-			wait(NULL);
-		}
-		wait(NULL);		//found this line from the wait man page
+	*/
+
+	
+	pid_t pid = fork();						//fork the process
+
 		
+	if (pid == 0) {							//child process will do execvp.
+		execvp(args[0], args);		
+
+		exit(1);							//this will only get hit if there is an issue with a command
+	}
+	
+	else if (pid > 0) {						//parent process will wait if there is an &
+		
+		wait(NULL);							//for now parent just waits for child
+	
 	}
 	else {
 		cout << "ERROR FORKING" << endl;
