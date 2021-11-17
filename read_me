@@ -1,0 +1,37 @@
+Jake Tremblay 
+Danny Ha
+Brian Richey
+CS433 Programming Assignment 2 Report
+Submitted Files:
+main.cpp: Main file, handles the primary while loop that runs the shell
+simple_shell.h: A header file that contains the functions for simple_shell
+simple_shell.cpp: A source file that contains the functions for simple_shell class
+Makefile: Allows us to compile the above files using the make command and creates
+executable prog2, also creates executables (.o) for all of the source files
+How to Compile and Run the Program:
+	Run Make to ensure updated files, then run ./prog2
+	Program has a special keyword “exit” to force exit,  and “!!” to do last command
+Design and Implementation choices: 
+		For this project, we decided to deviate from the textbook slightly by creating a file for the simple shell program, rather than keep it all in main. The entire program is set within a while loop that will only break when the flag “shouldRun” is switched to false. The design is relatively simple (in terms of data structures). We house a vector of strings in the simple-shell header to facilitate the saving of commands easily and quickly. 
+We have two primary functions (execute and tokenize) that are the core of the functionality for the shell. The tokenize command takes in two parameters, first is the command in char array form, the next is a pointer to a pointer of char arrays. The tokenize function utilizes strtok to split the command based on white spaces, and most importantly is null terminated at the end of tokenization (such that args[size] = NULL). This ensures that execvp is able to properly read the command and stop at null. 
+	The execute function only takes one parameter, the pointer to the args array, which is a pointer to a char array pointers. Execute will use stringified version of the command to check if the input is any of our special inputs (exit, !!, <, >, or &). An important feature of the execute function is the history functionality ( or using !! command). For our program, we decided to use the vector of strings, retrieve the last element, and pop the list in order to retrieve the last entered command. 
+	The execute function also handles the redirection of input / output to files in.txt and out.txt. IMPORTANT NOTE: while the < and > operators work properly, they are limited to only using the files “in.txt” and “out.txt”. This is because when execute finds the special characters < or >, it will replace the character AND file name with NULL, we could change this to allow the user to enter in whatever file name they want, but for simplicity we decided against it.
+	After the execute function handles all special keywords and cases, it moves on to forking the parent process and using execvp with the args array. Also special note for the use of &: if you want to push process to the background that is fine, however in this program we do not have a system to control Jobs. So this being said, if a user were to continually throw process in the background with &, it may create defunct processes that last until the program exits. I postulate that it could be dangerous / undefined behaviour if a user were to enter in very large numbers of background processes. This is unrealistic, but worth noting. 
+
+Lessons Learned/Re-Learned: 
+Parsing: a big part of this assignment for us was debugging segmentation faults as a result of using pointers in sloppy ways. It is much easier to use modern C++ string than to use the old style C char array strings
+ execvp() and fork() : new commands to all of us, using them was relatively easy and not very much overhead to deal with, however, we all only have a windows machine so it was slightly challenging debugging.
+ dev unix shell on windows OS: along the same points as previous, our group members all use Windows regularly, so developing a progarm using unistd.h files and functions such as fork() which are native to unix was challenging to work out. We didn’t get to use a debugger to step through our program on our own machines, only were able to use GDB (which is much more complicated than a GUI debugger) on the server or on Cygwin to try to troubleshoot our output.
+Pointing to a cells address vs. Pointing to a cells contents == segmentation faults everywhere. We found many issues in using pointers, especially pointers for a char array, because strings and characters are immutable - meaning any time we tried to do something simple and seemingly harmless like strcpy(temp, *args) would give a segmentation fault. 
+References:
+https://stackoverflow.com/questions/7555820/how-to-work-with-null-pointers-in-a-stdvector  → helped a lot with understanding why we were segmentation faulting
+https://stackoverflow.com/questions/33884291/pipes-dup2-and-exec → good info on dup2
+Textbook info - assignment PDF
+
+Misc. (extra things done, future improvements etc):
+As stated earlier -> while the < and > operators work properly, they are limited to only using the files “in.txt” and “out.txt”. This is because when execute finds the special characters < or >, it will replace the character AND file name with NULL, we could change this to allow the user to enter in whatever file name they want, but for simplicity we decided against it
+
+Also stated earlier -> the use of &: if you want to push process to the background that is fine, however in this program we do not have a system to control Jobs. So this being said, if a user were to continually throw process in the background with &, it may create defunct processes that last until the program exits. I postulate that it could be dangerous / undefined behaviour if a user were to enter in very large numbers of background processes. This is unrealistic, but worth noting
+
+The unix libraries were a new tool to us in c++. We are familiar with similar libraries in python and it was fun to work with. This program, though short, took a good amount of thought and planning. The fork() and execvp() functions are fickle and can be dangerous if you don’t fully understand what it means to fork. Gained a lot of valuable unix knowledge from this project. 
+
